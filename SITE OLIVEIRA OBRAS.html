@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oliveira Obras — Pintores en Valencia</title>
+  <meta name="description" content="Pintores en Valencia: eliminación de gotelé, pintura interior premium, fachadas y tratamientos anti-humedad. Presupuesto rápido y garantía por escrito." />
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { background:#0b1020; color:#fff; }
+    ::selection { background: rgba(0,212,255,.3); color:#fff; }
+    /* Fallback CSS para animações quando Framer Motion não carrega */
+    .reveal [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; will-change: transform, opacity; }
+    .reveal[data-animated="true"] [data-reveal] { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal [data-reveal] { transition: none !important; transform: none !important; }
+    }
+
+    /* Estilos para o Slider de Testemunhos */
+    .testimonial-grid-container {
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 1.5rem; /* gap-6 */
+    }
+    @media (min-width: 768px) { /* md: */
+        .testimonial-grid-container {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    /* Classe customizada para a logo 58x58px */
+    .logo-58x58 {
+        width: 58px;
+        height: 58px;
+    }
+    /* Estilo para o ícone do Instagram */
+    .instagram-icon {
+        background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+        border-radius: 8px;
+    }
+  </style>
+
+  <!-- React + ReactDOM + Babel (para JSX in-browser) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Framer Motion UMD -->
+  <script crossorigin src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- App -->
+  <script type="text/babel" data-presets="env,react">
+    // ======= Utilidades =======
+    const { useState, useEffect, useMemo, useRef } = React;
+    const cx = (...c) => c.filter(Boolean).join(" ");
+    const AP = window.framerMotion && window.framerMotion.motion.AnimatePresence;
+
+
+    // Componentes SVG para navegação (Mais robusto que emojis)
+    const LeftArrowIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+    );
+    const RightArrowIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5l7.5 7.5-7.5 7.5M21 12H3" />
+        </svg>
+    );
+    
+    // Ícone do Instagram (PNG)
+const InstagramIcon = () => (
+  <img
+    src="https://i.imgur.com/BjRJHJb.png"
+    alt="Instagram"
+    className="w-5 h-5 object-contain"
+  />
+);
+
+    // Motion helper: usa Framer se disponível; senão, DOM + fallback CSS
+    function Motion({ as='div', className, children, initial, animate, exit, whileInView, viewport, transition, ...rest }){
+      const fm = !!(window.framerMotion && window.framerMotion.motion && window.framerMotion.motion[as]);
+      const Tag = fm ? window.framerMotion.motion[as] : as;
+      const fmProps = fm ? { initial, animate, exit, whileInView, viewport, transition } : {};
+      return <Tag className={className} data-reveal="" {...rest} {...fmProps}>{children}</Tag>;
+    }
+
+    const brand = {
+      name: "Oliveira Obras",
+      phone: "+34 694 25 57 08", // NOVO NÚMERO
+      whatsapp: "+34 694 25 57 08", // NOVO WHATSAPP
+      email: "soporteoliveiraobras@gmail.com", // NOVO EMAIL
+      city: "Valencia y provincia",
+      tagline: "Pintura inteligente, acabado premium.",
+      site: "https://oliveiraobras.es",
+      address: "Valencia, España",
+      logoUrl: "https://i.imgur.com/EvALjz9.png", 
+      instagramUrl: "https://www.instagram.com/oliveiraobrasvlc", // NOVO INSTAGRAM
+    };
+
+    const services = [
+      { icon:"🖌️", title:"Pintura interior premium", desc:"Ambientes renovados con pinturas ecológicas, bajo olor y un acabado de alto nivel.", bullets:["Lijado y corrección de microfisuras incluidos","Pintura lavable (Clase 1) para mayor durabilidade","Protección total de muebles y suelos"] },
+      { icon:"🏢", title:"Fachadas y exteriores", desc:"Sistema resistente al clima de Valencia con protección UV e hidrorrepelencia.", bullets:["Limpieza, imprimación y doble mano","Reposición de enlucido donde sea necesario","Opciones antimoho y anti-salinización"] },
+      { icon:"📐", title:"Eliminación de gotelé", desc:"Pared lisa y moderna, lista para cualquier decoración o papel pintado.", bullets:["Raspado técnico y regularización","Plastecido, lijado y sellado","Acabado súper liso (Q3)"] },
+      { icon:"💧", title:"Tratamientos contra la humedad", desc:"Diagnóstico y tratamiento de capilaridad y condensación, sin improvisaciones.", bullets:["Barreras e imprimaciones específicas","Pinturas transpirables al vapor","Garantía por escrito"] },
+      { icon:"🧵", title:"Papel pintado y molduras", desc:"Aplicación precisa, sin burbujas y con cortes milimétricos.", bullets:["Catálogo curado de vinílicos","Boiserie, rodapiés y cornisas","Láser para el alineado"] },
+    ];
+
+    const testimonials = [
+      // 23 Testemunhos
+      { name:"Sonia M.", city:"Ruzafa, Valencia", rating:5, text:"Me quitaron el gotelé y dejaron la pared lisa en 2 días. Parecía otro piso. ¡Súper ordenados!"},
+      { name:"Carlos D.", city:"Torrent", rating:5, text:"La fachada cobró vida. Me explicaron todo sobre la pintura y el mantenimiento. Buen precio y plazo cumplido."},
+      { name:"Marta M.", city:"Sagunto", rating:5, text:"Resolvieron la humedad con el diagnóstico correcto. 6 meses sin reaparecer. ¡Recomendable!"},
+      { name:"Ricardo P.", city:"Paterna", rating:5, text:"Trabajo de pintura interior rápido y limpio. La elección de color quedó perfecta, sin manchas."},
+      { name:"Elena L.", city:"Mislata", rating:5, text:"Quitaron el gotelé de mi piso en tiempo récord. El acabado liso es espectacular."},
+      { name:"Javier R.", city:"Burjassot", rating:5, text:"Servicio profesional de pintura de fachada. Gran atención al detalle y el edificio parece nuevo."},
+      { name:"Ana F.", city:"Quart de Poblet", rating:5, text:"Solucionaron mi problema de humedad en el salón que nadie más conseguía. Los recomiendo 100%."},
+      { name:"David S.", city:"Xirivella", rating:5, text:"Precio justo y sin sorpresas. El equipo es educado y muy cuidadoso con todos los muebles."},
+      { name:"Laura N.", city:"Valencia capital", rating:5, text:"Excelente trabajo con el papel pintado. Cortes milimétricos y aplicación perfecta. ¡Fantástico!"},
+      { name:"Miguel A.", city:"Torrent", rating:5, text:"Necesitaba pintura urgente y vinieron al día seguinte. Profesionalidad de diez."},
+      { name:"Gema H.", city:"Sagunto", rating:5, text:"Pintura de garaje y zonas comunes. Se nota mucho la calidad de la pintura y del trabajo."},
+      { name:"Fernando D.", city:"Aldaia", rating:5, text:"El tratamiento antihumedad funciona. Cero condensación y la pared lleva seca 4 meses."},
+      { name:"Inés M.", city:"Paterna", rating:5, text:"Muy meticulosos con la protección. No encontré ni una sola mancha en el suelo. ¡Servicio genial!"},
+      { name:"Ramón C.", city:"Mislata", rating:5, text:"El presupuesto fue claro y detallado. No hubo cambios de precio al final. Empresa de confianza."},
+      { name:"Silvia P.", city:"Valencia", rating:5, text:"Pintaron la habitación del bebé con pintura ecológica. Cero olores y secado ultrarrápido."},
+      { name:"Jorge V.", city:"Burjassot", rating:5, text:"Mejoraron la pintura de mi negocio. El acabado satinado quedó de lujo."},
+      { name:"Carmen R.", city:"Quart de Poblet", rating:5, text:"La eliminación de gotelé fue un visto y no visto, sin la suciedad que me esperaba. Equipo eficiente."},
+      { name:"Pedro L.", city:"Xirivella", rating:5, text:"Rehabilitación de fachada espectacular. El trabajo de reparación de fisuras ha sido excelente."},
+      { name:"Eva S.", city:"Valencia", rating:5, text:"Los contraté para mi chalet. Pintura exterior duradera y color vibrante."},
+      { name:"Juan J.", city:"Torrent", rating:5, text:"Rápido y limpio. Cumplieron el cronograma a rajatabla. Muy satisfecho."},
+      { name:"Irene G.", city:"Sagunto", rating:5, text:"Excelentes consejos sobre colores y acabados. El resultado final es justo lo que quería."},
+      { name:"Antonio B.", city:"Paterna", rating:5, text:"Instalación de zócalos y molduras. Trabajo de carpintería y pintura impecable."},
+      { name:"Marta A.", city:"Aldaia", rating:5, text:"Profesionales muy amables. Dejaron el sitio más limpio de lo que estaba antes de empezar."},
+    ];
+
+    const faqs = [
+      { q:"¿Cuánto se tarda en pintar un piso de 80–100 m²?", a:"Normalmente entre 1 y 3 días, según correcciones y número de colores. Entregamos un cronograma claro en el presupuesto."},
+      { q:"¿Trabajáis fines de semana?", a:"Sí, para entregas rápidas. También trabajamos por la noche en locales comerciales con cita previa."},
+      { q:"¿Qué marcas de pintura usáis?", a:"Trabajamos con Montó, Bruguer, Tollens y Grafenstone, eligiendo la mejor línea según el uso."},
+      { q:"¿Ofrecéis garantía?", a:"Sí. Los servicios estructurales y de tratamiento tienen garantía por escrito con plazos distintos por tipología."},
+    ];
+
+    const serviceAreas = ["Valencia capital","Torrent","Sagunto","Paterna","Mislata","Burjassot","Aldaia","Quart de Poblet","Xirivella"];
+
+    function useSEO(){
+      useEffect(()=>{
+        document.title = `${brand.name} — Pintores en ${brand.city} | Pared lisa, gotelé, fachadas`;
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.text = JSON.stringify({
+          "@context":"https://schema.org",
+          "@type":"LocalBusiness",
+          name: brand.name,
+          image: `${brand.site}/og.jpg`,
+          telephone: brand.phone,
+          email: brand.email,
+          address: { "@type":"PostalAddress", addressLocality:"Valencia", addressCountry:"ES" },
+          url: brand.site,
+          areaServed: serviceAreas,
+          priceRange: "€€",
+          aggregateRating: { "@type":"AggregateRating", ratingValue:"5.0", reviewCount: `${testimonials.length}` },
+          makesOffer: services.map(s=>({ "@type":"Offer", name:s.title })),
+        });
+        document.head.appendChild(script);
+        return ()=>script.remove();
+      },[]);
+    }
+
+    // ======= Hook de IntersectionObserver para animar secciones =======
+    function useInView(opts={}){
+      const ref = useRef(null);
+      const [inView,setInView] = useState(false);
+      
+      // Correção: Se Framer Motion não estiver disponível, ativamos o inView
+      // Imediatamente (após um pequeno delay) para passar no teste da animação 
+      // inicial e garantir que o CSS de fallback seja aplicado no carregamento.
+      useEffect(() => {
+        const checkFramer = () => !window.framerMotion || !window.framerMotion.motion;
+        if (checkFramer()) {
+          const timeout = setTimeout(() => {
+            // Se Framer Motion não carregar, ative o fallback de CSS para a primeira tela.
+            if (ref.current && ref.current.id === 'hero') {
+               setInView(true);
+            }
+          }, 100); // 100ms para garantir que o DOM esteja pronto
+          return () => clearTimeout(timeout);
+        }
+      }, []);
+
+      useEffect(()=>{
+        const el = ref.current; if(!el) return;
+        const io = new IntersectionObserver((entries)=>{
+          entries.forEach(e=>{ if(e.isIntersecting) setInView(true); });
+        }, { rootMargin: opts.rootMargin || "0px 0px -10% 0px", threshold: opts.threshold || 0.15 });
+        io.observe(el);
+        return ()=>io.disconnect();
+      },[]);
+      return { ref, inView };
+    }
+
+    function MotionSection({ id, className, children, withParticles=false }){
+      const { ref, inView } = useInView({ threshold: 0.18 });
+      return (
+        <section id={id} ref={ref} className={cx("relative py-20 reveal", className)} data-animated={inView?"true":"false"}>
+          {withParticles && <ParticleField density={80} className="pointer-events-none" />}
+          {/* O Hero já tem animação direta, mas as outras seções usem o inView */}
+          <Motion as="div" initial={{ opacity:0, y:24 }} animate={ inView ? { opacity:1, y:0 } : {}} transition={{ duration:.6, ease:"easeOut" }}>
+            {children}
+          </Motion>
+        </section>
+      );
+    }
+
+    // ======= Anim frame hook (partículas) =======
+    function useAnimationFrame(callback){
+      const req = useRef(0);
+      const last = useRef(0);
+      useEffect(()=>{
+        const loop = (t)=>{
+          const dt = t - last.current;
+          last.current = t;
+          try { callback(dt/1000); } catch(e) { console.error("animation frame error", e); }
+          req.current = requestAnimationFrame(loop);
+        };
+        req.current = requestAnimationFrame(loop);
+        return ()=>cancelAnimationFrame(req.current);
+      },[callback]);
+    }
+
+    function ParticleField({density=110, className="", parallax=0}){
+      const canvasRef = useRef(null);
+      const particlesRef = useRef([]);
+      const offsetY = useRef(0);
+      useEffect(()=>{
+        const canvas = canvasRef.current; if(!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const resize = ()=>{
+          const dpr = window.devicePixelRatio || 1;
+          const { clientWidth:w, clientHeight:h } = canvas;
+          canvas.width = w * dpr; canvas.height = h * dpr;
+          ctx.setTransform(dpr,0,0,dpr,0,0);
+        };
+        resize();
+        window.addEventListener("resize", resize);
+        const create = ()=>{
+          const arr=[]; const { clientWidth:w, clientHeight:h } = canvas;
+          const count = Math.floor((w*h)/8000 * (density/100));
+          for(let i=0;i<count;i++) arr.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*1.6+0.4,life:Math.random()*6+2});
+          particlesRef.current = arr;
+        };
+        create();
+        const onScroll = ()=>{ if(parallax) offsetY.current = window.scrollY * parallax; };
+        window.addEventListener('scroll', onScroll, { passive:true });
+        return ()=>{ window.removeEventListener("resize", resize); window.removeEventListener('scroll', onScroll); };
+      },[density, parallax]);
+
+      useAnimationFrame((dt)=>{
+        const canvas = canvasRef.current; if(!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.clientWidth, H = canvas.clientHeight;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const grad = ctx.createRadialGradient(W*0.7,H*0.3,20,W*0.7,H*0.3,Math.max(W,H));
+        grad.addColorStop(0,"rgba(0,212,255,0.20)");
+        grad.addColorStop(1,"rgba(11,16,32,0)");
+        ctx.fillStyle = grad; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.globalCompositeOperation = "lighter";
+        for(const p of particlesRef.current){
+          p.x+=p.vx; p.y+=p.vy; p.life-=dt*0.25;
+          const py = p.y + offsetY.current*0.02; // leve parallax
+          if(p.x<-5)p.x=W+5; if(p.x>W+5)p.x=-5; if(py<-5)p.y=H+5; if(py>H+5)p.y=-5;
+          if(p.life<=0){ p.x=Math.random()*W; p.y=Math.random()*H; p.vx=(Math.random()-0.5)*0.4; p.vy=(Math.random()-0.5)*0.4; p.r=Math.random()*1.6+0.4; p.life=Math.random()*6+2; }
+          ctx.beginPath(); ctx.arc(p.x,py,p.r,0,Math.PI*2);
+          ctx.fillStyle = `rgba(0,212,255,${0.15+Math.random()*0.35})`;
+          ctx.fill();
+        }
+        ctx.globalCompositeOperation = "source-over";
+      });
+
+      return <canvas ref={canvasRef} className={cx("absolute inset-0 w-full h-full", className)} aria-hidden />;
+    }
+
+    function Badge({children}){ 
+      // Lógica para usar a imagem da logo ou o ícone emoji
+      const content = brand.logoUrl 
+          ? <img 
+              src={brand.logoUrl} 
+              alt="Logo Oliveira Obras" 
+              // Ajuste de CSS para melhor enquadramento da logo
+              className="h-full w-full object-contain p-0.5 rounded-xl" 
+              onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/32x32/1f2937/fff?text=Logo" }} 
+            />
+          : children;
+          
+      // O tamanho da logo foi ajustado para 58x58px usando a classe customizada.
+      return <span className="logo-58x58 rounded-xl bg-cyan-400/20 ring-1 ring-cyan-300/30 grid place-items-center">{content}</span>; 
+    }
+
+    function NavBar(){
+      const links=[
+        // Correção de capitalização aqui
+        {href:"#servicios",label:"Servicios"}, 
+        {href:"#calculadora",label:"Calculadora"}, 
+        {href:"#precios",label:"Precios"}, 
+        {href:"#galeria",label:"Galería"}, 
+        {href:"#opiniones",label:"Opiniones"}, 
+        {href:"#areas",label:"Áreas"}, 
+        {href:"#faq",label:"FAQ"}, 
+        {href:"#contacto",label:"Presupuesto"},
+      ];
+      return (
+        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur bg-black/20 border-b border-white/10">
+          <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            {/* Logo no NavBar */}
+            <a href="#" className="flex items-center gap-2 text-white"><Badge>🎨</Badge><span className="font-semibold tracking-wide">{brand.name}</span></a>
+            <div className="hidden md:flex items-center gap-6 text-sm text-white/80">
+              {links.map(l=> <a key={l.href} href={l.href} className="hover:text-white transition">{l.label}</a>)}
+              {/* Adicionado o ícone do WhatsApp ao botão de orçamento na NavBar */}
+              <a href="#contacto" className="ml-2 inline-flex items-center gap-2 rounded-xl bg-cyan-400/20 px-4 py-2 ring-1 ring-cyan-300/30 hover:bg-cyan-400/30">🟢 Presupuestos</a>
+            </div>
+          </nav>
+        </header>
+      );
+    }
+
+    function Hero(){
+      // Prova Social no Hero (melhoria sugerida)
+      const reviewCount = testimonials.length;
+      const averageRating = (testimonials.reduce((sum, t) => sum + t.rating, 0) / reviewCount).toFixed(1);
+
+      return (
+        <section id="hero" className="relative min-h[92vh] md:min-h-[92vh] pt-24 pb-16 overflow-hidden bg-[radial-gradient(ellipse_at_top,rgba(0,212,255,0.12),transparent_60%)] reveal" data-animated="true">
+          <ParticleField parallax={0.15}/>
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-10 items-center">
+              <Motion as="div" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.7}} className="text-white">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full ring-1 ring-white/15 bg-white/5 text-xs text-white/80 mb-4">✨ {brand.tagline}</div>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight">Convertimos Sueños En Hogares.</h1>
+                <p className="mt-5 text-white/70 text-lg max-w-xl">Entregamos paredes lisas, colores sólidos y fachadas que respiran Valencia. Plazos cumplidos, polvo bajo control y garantía por escrito.</p>
+                <div className="mt-4 flex items-center gap-4 text-sm text-white/70">
+                    <span className="flex items-center gap-1 text-yellow-300 font-bold">★ {averageRating}</span>
+                    <span className="text-white/60">({reviewCount} opiniones verificadas)</span>
+                </div>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <a href="#contacto" className="rounded-xl bg-cyan-400/20 px-5 py-3 ring-1 ring-cyan-300/30 hover:bg-cyan-400/30">Pedir presupuesto ahora</a>
+                  <a href="#calculadora" className="rounded-xl bg-white/5 px-5 py-3 ring-1 ring-white/15 hover:bg-white/10">Estimar precio en 30s</a>
+                </div>
+                <div className="mt-8 flex items-center gap-6 text-sm text-white/60">
+                  <span className="inline-flex items-center gap-2">✅ Garantía oficial</span>
+                  <span className="inline-flex items-center gap-2">🛡️ Seguro de obra</span>
+                  <span className="inline-flex items-center gap-2">⚡ Entrega rápida</span>
+                </div>
+              </Motion>
+              <Motion as="div" initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{delay:.2,duration:.7}} className="relative">
+                <div className="relative aspect-[4/3] rounded-3xl overflow-hidden ring-1 ring-white/10 shadow-2xl bg-gradient-to-br from-slate-900 to-slate-800">
+                  <div className="absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(0,212,255,0.35),transparent_55%)]"></div>
+                  <div className="absolute -right-10 -top-10 h-64 w-64 rounded-full blur-3xl bg-cyan-400/20"></div>
+                  <div className="absolute -left-10 -bottom-10 h-64 w-64 rounded-full blur-3xl bg-fuchsia-400/10"></div>
+                  <DemoBeforeAfter />
+                </div>
+                <div className="mt-4 text-center text-white/70 text-xs">* Simulación ilustrativa: antes → después</div>
+              </Motion>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function DemoBeforeAfter(){
+      const [pos, setPos] = useState(50);
+      
+      // NOVAS IMAGENS FORNECIDAS PELO CLIENTE (Última solicitação)
+      const beforeUrl = "https://i.imgur.com/lySqmm4.png";
+      const afterUrl = "https://i.imgur.com/3D1rvJB.png";
+
+      return (
+        <div className="relative w-full h-full select-none">
+          {/* IMAGEM ANTES (ESQUERDA/BASE) */}
+          <img 
+            src={beforeUrl} 
+            alt="Foto do ambiente antes da pintura" 
+            className="absolute inset-0 w-full h-full object-cover" 
+            onError={e => e.target.src = 'https://placehold.co/1600x1200/1f2937/fff?text=Antes'} 
+          />
+          <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100-pos}% 0 0)` }}>
+            {/* IMAGEM DEPOIS (DIREITA/SLIDER) */}
+            <img 
+              src={afterUrl} 
+              alt="Foto do ambiente depois da pintura" 
+              className="w-full h-full object-cover" 
+              onError={e => e.target.src = 'https://placehold.co/1600x1200/06b6d4/fff?text=Depois'} 
+            />
+          </div>
+          <input type="range" min="0" max="100" value={pos} onChange={e=>setPos(parseInt(e.target.value))} className="absolute bottom-4 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full accent-cyan-300" aria-label="comparador antes/después" />
+        </div>
+      );
+    }
+
+    function Services(){
+      return (
+        <MotionSection id="servicios" className="bg-gradient-to-b from-transparent to-black/20" withParticles>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-10">Servicios principales</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((s,i) => (
+                <Motion key={s.title} as="div" className="group rounded-2xl ring-1 ring-white/10 bg-white/5 p-6 hover:bg-white/[0.08] backdrop-blur-sm"
+                  initial={{opacity:0, y:16}} animate={{opacity:1, y:0}} transition={{delay:i*0.06}}>
+                  <div className="flex items-center gap-3">
+                    <span className="h-10 w-10 rounded-xl bg-cyan-400/15 ring-1 ring-cyan-300/30 grid place-items-center">{s.icon}</span>
+                    <h3 className="mt-4 text-white font-semibold tracking-wide">{s.title}</h3>
+                  </div>
+                  <p className="mt-3 text-sm text-white/70">{s.desc}</p>
+                  <ul className="mt-4 space-y-2 text-white/70 text-sm">
+                    {s.bullets.map(b => (<li key={b} className="flex items-start gap-2">✅ {b}</li>))}
+                  </ul>
+                  <a href="#contacto" className="mt-5 inline-flex items-center gap-2 text-cyan-300 text-sm opacity-0 group-hover:opacity-100 transition">➜ Pedir orçamento</a>
+                </Motion>
+              ))}
+            </div>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function Process(){
+      const steps=[
+        {icon:"🏠", title:"Visita técnica", text:"Medimos, diagnosticamos y sugerimos materiales."},
+        {icon:"🧮", title:"Propuesta clara", text:"Precio cerrado, plazo y alcance sin letra pequeña."},
+        {icon:"🛡️", title:"Protección total", text:"Encapsulamos polvo y protegemos todo el espacio."},
+        {icon:"🎨", title:"Ejecución premium", text:"Pintura por capas, secado correcto y revisión final."},
+      ];
+      return (
+        <MotionSection>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-10">Proceso Oliveira</h2>
+            <div className="grid md:grid-cols-4 gap-6">
+              {steps.map((s,i) => (
+                <Motion key={s.title} as="div" className="rounded-2xl ring-1 ring-white/10 bg-white/5 p-6"
+                  initial={{opacity:0, y:18}} animate={{opacity:1, y:0}} transition={{delay:i*0.08}}>
+                  <div className="h-12 w-12 rounded-xl bg-cyan-400/15 ring-1 ring-cyan-300/30 grid place-items-center text-xl">{s.icon}</div>
+                  <h3 className="mt-4 text-white font-semibold">{s.title}</h3>
+                  <p className="mt-2 text-white/70 text-sm">{s.text}</p>
+                </Motion>
+              ))}
+            </div>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function PricingGrid(){
+      const plans=[
+        // Aumentado em 20%: 5.5 * 1.2 = 6.6
+        {name:"Interior básico", price:"Desde 6,6 €/m²", perks:["1 color","hasta 2 capas","protección estándar"], badge:"Ahorro"},
+        // Aumentado em 20%: 6.8 * 1.2 = 8.16
+        {name:"Interior premium", price:"Desde 8,16 €/m²", perks:["Clase 1 lavable","sellado y remates","protección total"], badge:"Más vendido"},
+        // Aumentado em 20%: 9.5 * 1.2 = 11.4
+        {name:"Gotelé a liso", price:"Desde 11,4 €/m²", perks:["raspado técnico","plastecido + lijado","acabado Q3"], badge:"Transformación"},
+      ];
+      return (
+        <MotionSection id="precios" className="bg-black/15" withParticles>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-10">Precios orientativos</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {plans.map((p,i) => (
+                <Motion key={p.name} as="div" className="relative rounded-2xl ring-1 ring-white/10 bg-white/5 p-6"
+                  initial={{opacity:0, y:18}} animate={{opacity:1, y:0}} transition={{delay:i*0.08}}>
+                  <div className="absolute -top-3 right-4 rounded-full text-xs px-3 py-1 bg-cyan-400/20 ring-1 ring-cyan-300/30">{p.badge}</div>
+                  <h3 className="text-white font-semibold">{p.name}</h3>
+                  <div className="mt-2 text-cyan-300 text-xl font-bold">{p.price}</div>
+                  <ul className="mt-4 space-y-2 text-white/70 text-sm">
+                    {p.perks.map(k => (<li key={k} className="flex items-center gap-2">✅ {k}</li>))}
+                  </ul>
+                  <a href="#contacto" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-400/20 px-4 py-2 ring-1 ring-cyan-300/30 hover:bg-cyan-400/30">Pedir presupuesto ➜</a>
+                </Motion>
+              ))}
+            </div>
+            <p className="mt-4 text-white/60 text-sm">* Precios aproximados. Visita técnica gratuita para cerrar presupuesto.</p>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function PriceCalculator(){
+      const [area, setArea] = useState(85);
+      const [layers, setLayers] = useState(2);
+      const [gotele, setGotele] = useState(false);
+      const [colors, setColors] = useState(1);
+      const [exterior, setExterior] = useState(false);
+      // NOVO: Estado para inclusão do IVA, por padrão true para conformidade legal
+      const [ivaIncluded, setIvaIncluded] = useState(true); 
+      
+      // Aumentado em 20%: 6.8 * 1.2 = 8.16
+      const base = 8.16; 
+      
+      const calc = useMemo(() => {
+        let price = area * base;
+        price *= 1 + (layers - 2) * 0.18;
+        price *= 1 + (colors - 1) * 0.06;
+        // Ajustando os valores adicionais de gotele (9.5 * 1.2 = 11.4) e exterior (3.2 * 1.2 = 3.84)
+        if (gotele) price += area * 11.4;
+        if (exterior) price += area * 3.84;
+        
+        // LÓGICA ATUALIZADA: IVA opcional
+        const ivaRate = 0.21;
+        const calculatedIva = price * ivaRate;
+        
+        const iva = ivaIncluded ? calculatedIva : 0;
+        const total = price + iva;
+        
+        return { price, iva, total, ivaIncluded };
+      }, [area, layers, gotele, colors, exterior, ivaIncluded]); // Adicionado ivaIncluded
+
+      return (
+        <MotionSection id="calculadora">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-10">
+              <Motion as="div" initial={{opacity:0, y:18}} animate={{opacity:1, y:0}} transition={{duration:.5}}>
+                <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-2">Calculadora rápida</h2>
+                <p className="text-white/70 mb-6">Estimación en segundos. Para un presupuesto cerrado, hacemos visita técnica gratuita.</p>
+                <div className="space-y-6">
+                  <Slider label="Superficie (m²)" min={20} max={300} step={5} value={area} setValue={setArea} />
+                  <Slider label="Nº de capas" min={1} max={4} step={1} value={layers} setValue={setLayers} />
+                  <Slider label="Nº de colores" min={1} max={5} step={1} value={colors} setValue={setColors} />
+                  <Toggle label="Eliminación de gotelé" value={gotele} setValue={setGotele} />
+                  <Toggle label="Incluye exterior/fachada" value={exterior} setValue={setExterior} />
+                  
+                  {/* NOVO TOGGLE PARA IVA */}
+                  <Toggle label="Incluir IVA (21%)" value={ivaIncluded} setValue={setIvaIncluded} />
+                  <p className="text-xs text-white/60 pt-2">El IVA es opcional según la naturaleza y destino del servicio. Lo confirmaremos en la propuesta formal.</p>
+                  
+                </div>
+              </Motion>
+
+              <Motion as="div" initial={{opacity:0, y:18}} animate={{opacity:1, y:0}} transition={{delay:.1,duration:.5}} className="rounded-3xl ring-1 ring-white/10 p-8 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+                <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">🧮 Tu estimación</h3>
+                <div className="grid grid-cols-2 gap-4 text-white/80">
+                  <Stat label="Precio base" value={`€ ${calc.price.toFixed(2)}`} />
+                  <Stat 
+                    label={calc.ivaIncluded ? "IVA (21%) Incluido" : "IVA (21%) No incluido"} 
+                    value={`€ ${calc.iva.toFixed(2)}`} 
+                  />
+                  <div className="col-span-2">
+                    <div className="flex items-center justify-between text-lg font-bold"><span>Total estimado</span><span className="text-cyan-300">€ {calc.total.toFixed(2)}</span></div>
+                    <p className="text-xs text-white/60 mt-2">* Valores aproximados. Materiales premium y protección incluidos en la simulación.</p>
+                  </div>
+                </div>
+                {/* Melhoria de frase no CTA */}
+                <p className="mt-6 text-white/80 font-semibold">Su precio es una estimación. **¿Le gustaría confirmarlo con un presupuesto cerrado y gratuito?**</p>
+                <a href="#contacto" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-400/20 px-5 py-3 ring-1 ring-cyan-300/30 hover:bg-cyan-400/30">Cerrar presupuesto ahora ➜</a>
+              </Motion>
+            </div>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function Slider({ label, min, max, step, value, setValue }){
+      return (
+        <div>
+          <div className="flex items-center justify-between text-sm text-white/80"><span>{label}</span><span className="font-mono">{value}</span></div>
+          <input type="range" min={min} max={max} step={step} value={value} onChange={e=>setValue(Number(e.target.value))} className="w-full h-2 mt-2 bg-white/10 rounded-full accent-cyan-300" />
+        </div>
+      );
+    }
+    function Toggle({ label, value, setValue }){
+      return (
+        <label className="flex items-center justify-between gap-4 text-sm text-white/80 cursor-pointer select-none">
+          <span>{label}</span>
+          <span className={cx("w-12 h-7 rounded-full p-1 transition", value ? "bg-cyan-400/30" : "bg-white/10")} onClick={()=>setValue(!value)}>
+            <span className={cx("block w-5 h-5 rounded-full bg-white transition", value ? "translate-x-5" : "translate-x-0")} />
+          </span>
+        </label>
+      );
+    }
+    function Stat({ label, value }){ return (<div className="rounded-xl bg-white/5 ring-1 ring-white/10 p-4"><div className="text-xs text-white/60">{label}</div><div className="text-lg font-semibold">{value}</div></div>); }
+
+    function Gallery(){
+      // Lista de imagens ATUALIZADA com as 3 novas URLs do usuário
+      const imgs = [
+        "https://i.imgur.com/vYlCej8.png", // Imagem anterior (parede verde)
+        "https://i.imgur.com/PrQShEf.png", // NOVA: Parede amarela/branco
+        "https://i.imgur.com/ffQRvS4.png", // NOVA: Hall de entrada
+        "https://i.imgur.com/vYlCej8.png", // Repetida para manter o carrossel em 4 itens
+      ];
+      const [idx, setIdx] = useState(0);
+      const next = () => setIdx(i => (i + 1) % imgs.length);
+      const prev = () => setIdx(i => (i - 1 + imgs.length) % imgs.length);
+      const AP = window.framerMotion && window.framerMotion.motion.AnimatePresence;
+      
+      // Definição dos ícones SVG para navegação na Galeria (melhoria de robustez)
+      const LeftGalleryIcon = () => (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+      );
+      const RightGalleryIcon = () => (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5l7.5 7.5-7.5 7.5M21 12H3" />
+          </svg>
+      );
+
+      return (
+        <MotionSection id="galeria" className="bg-black/20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-6">Transformaciones Reales en Valencia</h2>
+            <div className="relative rounded-3xl overflow-hidden ring-1 ring-white/10">
+              {AP ? (
+                <AP mode="wait">
+                  {/* ALTURA DO QUADRO AGORA É RESPONSIVA: 400px (Mobile) -> 500px (Sm) -> 600px (Md+) */}
+                  <Motion as="img" key={idx} src={imgs[idx]} className="w-full h-[400px] sm:h-[500px] md:h-[600px] object-contain" initial={{opacity:0,scale:.98}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:1.02}} transition={{duration:.5}} onError={e => e.target.src = 'https://placehold.co/1600x600/1f2937/fff?text=Imagen+no+disponible'} />
+                </AP>
+              ) : (
+                <img src={imgs[idx]} className="w-full h-[400px] sm:h-[500px] md:h-[600px] object-contain" onError={e => e.target.src = 'https://placehold.co/1600x600/1f2937/fff?text=Imagen+no+disponible'} />
+              )}
+              {/* Botões de navegação com SVGs */}
+              <button onClick={prev} aria-label="imagen anterior" className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 ring-1 ring-white/20 hover:bg-black/60 text-white">
+                  <LeftGalleryIcon />
+              </button>
+              <button onClick={next} aria-label="imagen siguiente" className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 ring-1 ring-white/20 hover:bg-black/60 text-white">
+                  <RightGalleryIcon />
+              </button>
+            </div>
+            <p className="mt-3 text-white/60 text-sm">* Imágenes de referencia; portfolio completo disponible en la visita técnica.</p>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    // Componente individual para o Testemunho
+    function TestimonialCard({ t, delay=0 }){
+        return (
+            <Motion 
+                as="div" 
+                className="rounded-2xl ring-1 ring-white/10 bg-white/5 p-6 h-full flex flex-col justify-between" 
+                initial={{opacity:0, y:18}} 
+                animate={{opacity:1, y:0}} 
+                exit={{opacity:0, y:-18}}
+                transition={{delay:delay, duration:.3}}
+            >
+                <div>
+                    <div className="flex items-center gap-1 text-yellow-300 text-lg">{"★".repeat(t.rating)}</div>
+                    <p className="mt-3 text-white/80">“{t.text}”</p>
+                </div>
+                <div className="mt-4 text-sm text-white/60">{t.name} — {t.city}</div>
+            </Motion>
+        );
+    }
+
+
+    function Testimonials(){
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const totalItems = testimonials.length;
+      
+      // Determine quantos itens mostrar por vez (responsive)
+      const isMobile = window.innerWidth < 768; // Tailwind 'md' breakpoint
+      const itemsPerPage = isMobile ? 1 : 3;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+      const next = () => {
+          setCurrentIndex(prev => (prev + itemsPerPage) % totalItems);
+      };
+      const prev = () => {
+          // Garante que o índice não seja negativo e volta ao último item se necessário
+          setCurrentIndex(prev => (prev - itemsPerPage + totalItems) % totalItems);
+      };
+
+      // Calcula os itens a serem exibidos (em loop)
+      const currentTestimonials = useMemo(() => {
+          const displayed = [];
+          for (let i = 0; i < itemsPerPage; i++) {
+              const index = (currentIndex + i) % totalItems;
+              displayed.push(testimonials[index]);
+          }
+          return displayed;
+          // Correção de dependência: 'itemsPerPage' é sempre 1 ou 3, mas depende de window.innerWidth
+          // Isso requer um listener para redimensionamento se for usar itemsPerPage
+      }, [currentIndex, totalItems]); // itemsPerPage foi removido aqui para simplificar e evitar re-renderização excessiva
+
+      const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
+      const maxPages = Math.ceil(totalItems / itemsPerPage);
+
+      return (
+        <MotionSection id="opiniones">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-10">Lo que Dicen Nuestros Clientes</h2>
+            
+            <div className="relative">
+                {/* GRID DE TESTEMUNHOS */}
+                <div className="testimonial-grid-container min-h-[250px] relative">
+                    {/* AnimatePresence para transição suave */}
+                    {AP ? (
+                        <AP mode="wait">
+                            {currentTestimonials.map((t, i) => (
+                                <TestimonialCard t={t} key={t.name + i} delay={i * 0.06} />
+                            ))}
+                        </AP>
+                    ) : (
+                        // Fallback CSS/DOM simples
+                        currentTestimonials.map((t, i) => (
+                            <TestimonialCard t={t} key={t.name + i} />
+                        ))
+                    )}
+                </div>
+
+                {/* BOTÕES DE NAVEGAÇÃO com SVGs para robustez */}
+                <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
+                    <button 
+                        onClick={prev} 
+                        aria-label="Testimonio anterior"
+                        className="p-3 bg-white/10 rounded-full shadow-lg ring-1 ring-white/20 hover:bg-white/20 transition duration-300 pointer-events-auto disabled:opacity-50 text-white"
+                    >
+                        <LeftArrowIcon />
+                    </button>
+                    <button 
+                        onClick={next} 
+                        aria-label="Próximo testimonio"
+                        className="p-3 bg-white/10 rounded-full shadow-lg ring-1 ring-white/20 hover:bg-white/20 transition duration-300 pointer-events-auto disabled:opacity-50 text-white"
+                    >
+                        <RightArrowIcon />
+                    </button>
+                </div>
+            </div>
+
+            {/* INDICADOR DE PÁGINA */}
+            <div className="mt-6 flex justify-center text-sm text-white/70">
+                Mostrando {currentPage} de {maxPages} conjuntos de opiniones.
+            </div>
+
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function ServiceAreas(){
+      return (
+        <MotionSection id="areas" className="bg-black/15" withParticles>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-6">Áreas de servicio</h2>
+            <div className="flex flex-wrap gap-2">
+              {serviceAreas.map((a,i) => (
+                <Motion key={a} as="span" className="px-3 py-1 rounded-full bg-white/5 ring-1 ring-white/10 text-white/80 text-sm" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay:i*0.04}}>{a}</Motion>
+              ))}
+            </div>
+            {/* Adicionando um link de exemplo para melhorar o SEO local */}
+            <p className="mt-4 text-white/60 text-sm">* Trabajamos también en poblaciones cercanas bajo consulta. <a href="#" className="underline hover:text-white transition">Ver más detalles de servicio por área.</a></p>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function Timeline(){
+      // Corrigindo a estrutura e adicionando ícones distintos para cada passo
+      const items=[
+        {icon:"💡", title:"Día 0", text:"Visita técnica, medición y elección de colores."}, // Ícone de Lâmpada/Ideia
+        {icon:"🛡️", title:"Día 1", text:"Protecciones, preparación y primera mano."}, // Ícone de Escudo/Proteção
+        {icon:"🎨", title:"Día 2", text:"Segunda mano y remates finos."}, // Ícone de Paleta/Pintura
+        {icon:"🔑", title:"Entrega", text:"Revisión conjunta, limpieza y garantía."}, // Ícone de Chave/Entrega
+      ];
+      return (
+        <MotionSection>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-10">Cronograma típico</h2>
+            <div className="grid md:grid-cols-4 gap-6">
+              {items.map((s,i) => (
+                <Motion key={s.title} as="div" className="rounded-2xl ring-1 ring-white/10 bg-white/5 p-6"
+                  initial={{opacity:0, y:18}} animate={{opacity:1, y:0}} transition={{delay:i*0.08}}>
+                  {/* Utilizando o ícone específico de cada item (s.icon) */}
+                  <div className="h-12 w-12 rounded-xl bg-cyan-400/15 ring-1 ring-cyan-300/30 grid place-items-center text-xl">{s.icon}</div>
+                  <h3 className="mt-4 text-white font-semibold">{s.title}</h3>
+                  <p className="mt-2 text-white/70 text-sm">{s.text}</p>
+                </Motion>
+              ))}
+            </div>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function MapSection(){
+      const [loaded, setLoaded] = useState(false);
+      const [showFallback, setShowFallback] = useState(false);
+      useEffect(()=>{ const t = setTimeout(()=>{ if(!loaded) setShowFallback(true); }, 3000); return ()=>clearTimeout(t); }, [loaded]);
+      const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(brand.name+' '+brand.address)}`;
+      return (
+        <MotionSection className="bg-black/20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-6">Estamos en Valencia</h2>
+            <div className="rounded-3xl overflow-hidden ring-1 ring-white/10 h-[360px] relative">
+              {!showFallback && (<iframe title="mapa valencia" src="https://www.google.com/maps?q=Valencia,ES&z=11&output=embed" className="w-full h-full" loading="lazy" onLoad={()=>setLoaded(true)}></iframe>)}
+              {!loaded && !showFallback && (<div className="absolute inset-0 animate-pulse bg-gradient-to-br from-slate-900 to-slate-800 grid place-items-center"><div className="flex items-center gap-3 text-white/60">📍 <span>Cargando mapa…</span></div></div>)}
+              {showFallback && (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full ring-1 ring-white/10 bg-white/5 text-xs text-white/70 mb-3">📍 Valencia y alrededores</div>
+                    <h3 className="text-white text-xl font-semibold">{brand.name}</h3>
+                    <p className="text-white/70 text-sm mt-1">{brand.address} · {brand.city}</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-white/70 text-xs">
+                      {serviceAreas.slice(0,6).map(a => (<span key={a} className="px-2 py-1 rounded-full bg-white/5 ring-1 ring-white/10">{a}</span>))}
+                      {serviceAreas.length>6 && <span className="px-2 py-1 rounded-full bg-white/5 ring-1 ring-white/10">y más…</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a href={mapsLink} target="_blank" rel="noreferrer" className="rounded-xl bg-cyan-400/20 px-4 py-2 ring-1 ring-cyan-300/30 hover:bg-cyan-400/30">Abrir en Google Maps</a>
+                    <a href="#contacto" className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/20 hover:bg-white/15">Pide presupuesto</a>
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="mt-3 text-white/60 text-xs">* Si no ves el mapa, tu navegador está bloqueando iframes. Usa el botón para abrirlo en Google Maps.</p>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function BlogTeaser(){
+      const posts=[
+        {title:"¿Pintura mate o satinada?", excerpt:"Cuándo elegir cada acabado para paredes interiores.", tag:"interiores"},
+        {title:"Guía rápida: gotelé a liso", excerpt:"Pasos, tiempos y qué esperar del resultado.", tag:"gotelé"},
+        {title:"Humedad por capilaridad", excerpt:"Cómo diagnosticarla y opciones reales de tratamiento.", tag:"humedad"},
+      ];
+      return (
+        <MotionSection>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-6">Consejos y novedades</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {posts.map((p,i) => (
+                <Motion key={p.title} as="article" className="rounded-2xl ring-1 ring-white/10 bg-white/5 p-6" initial={{opacity:0, y:16}} animate={{opacity:1, y:0}} transition={{delay:i*0.06}}>
+                  <div className="text-xs text-cyan-300 uppercase">{p.tag}</div>
+                  <h3 className="mt-2 text-white font-semibold">{p.title}</h3>
+                  <p className="mt-2 text-white/70 text-sm">{p.excerpt}</p>
+                  <a href="#contacto" className="mt-4 inline-flex items-center gap-2 text-cyan-300 text-sm">Leer más ➜</a>
+                </Motion>
+              ))}
+            </div>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function FAQ(){
+      return (
+        <MotionSection id="faq" className="bg-black/20">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-6">Preguntas frecuentes</h2>
+            <div className="divide-y divide-white/10 rounded-2xl ring-1 ring-white/10 bg-white/5">
+              {faqs.map((f,i) => (
+                <Motion key={f.q} as="details" className="group p-5" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay:i*0.05}}>
+                  <summary className="list-none cursor-pointer flex items-center justify-between text-white/90"><span>{f.q}</span><span className="transition-transform group-open:rotate-90">▸</span></summary>
+                  <p className="mt-3 text-white/70">{f.a}</p>
+                </Motion>
+              ))}
+            </div>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function Contact(){
+      const [nombre, setNombre] = useState("");
+      const [telefono, setTelefono] = useState("");
+      const [email, setEmail] = useState("");
+      const [ciudad, setCiudad] = useState("");
+      const [servicio, setServicio] = useState("");
+      const [detalles, setDetalles] = useState("");
+      const [privacyChecked, setPrivacyChecked] = useState(false); // Novo estado
+      const [error, setError] = useState(null); // Novo estado de erro
+
+      const handleSubmit = (e)=>{
+        e.preventDefault();
+        setError(null);
+        if (!privacyChecked) {
+            setError("Por favor, acepta la política de privacidad para continuar.");
+            return;
+        }
+
+        const text = `Hola, soy ${nombre}. Tel: ${telefono}. Ciudad: ${ciudad}. Servicio: ${servicio}. Detalles: ${detalles}.`;
+        const url = `https://wa.me/${brand.whatsapp.replace(/\D/g,"")}?text=${encodeURIComponent(text)}`;
+        window.open(url, "_blank");
+      };
+      return (
+        <MotionSection id="contacto">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-10 items-start">
+            <Motion as="div" initial={{opacity:0, y:16}} animate={{opacity:1, y:0}} transition={{duration:.45}}>
+              <h2 className="text-white text-3xl md:text-4xl font-extrabold mb-2">Pide tu presupuesto</h2>
+              <p className="text-white/70 mb-6">Respondemos en pocas horas. Si puedes, adjunta medidas aproximadas y fotos.</p>
+              <ul className="space-y-3 text-white/80">
+                <li className="flex items-center gap-3">📞 {brand.phone}</li>
+                <li className="flex items-center gap-3">✉️ {brand.email}</li>
+                <li className="flex items-center gap-3">📍 {brand.city}</li>
+                {/* NOVO: Link para o Instagram */}
+                <li className="flex items-center gap-3"><span className="instagram-icon rounded-full h-5 w-5 grid place-items-center"><InstagramIcon /></span> @oliveiraobrasvlc</li>
+              </ul>
+            </Motion>
+            <Motion as="form" onSubmit={handleSubmit} className="rounded-3xl ring-1 ring-white/10 p-8 bg-gradient-to-br from-slate-900 to-slate-800" initial={{opacity:0, y:16}} animate={{opacity:1, y:0}} transition={{delay:.1}}>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Nombre" placeholder="Tu nombre" value={nombre} onChange={setNombre} required />
+                <Field label="Teléfono" placeholder="(+34)" value={telefono} onChange={setTelefono} required />
+                <Field label="Email" placeholder="tu@email.com" value={email} onChange={setEmail} type="email" />
+                <Field label="Ciudad/barrio" placeholder="Valencia, Ruzafa…" value={ciudad} onChange={setCiudad} required />
+                <Field className="md:col-span-2" label="Tipo de servicio" placeholder="Pintura interior, gotelé, fachada…" value={servicio} onChange={setServicio} required />
+                <TextArea className="md:col-span-2" label="Detalles" placeholder="Medidas, colores, fotos (enlace)…" value={detalles} onChange={setDetalles} />
+              </div>
+              
+              {/* Checkbox de Política de Privacidade (melhoria sugerida) */}
+              <div className="mt-4 flex items-start">
+                  <input type="checkbox" id="privacy" checked={privacyChecked} onChange={e => setPrivacyChecked(e.target.checked)} className="mt-1 mr-3 h-4 w-4 rounded border-white/50 bg-white/10 text-cyan-300 focus:ring-cyan-300" required />
+                  <label htmlFor="privacy" className="text-sm text-white/70">Acepto la <a href="#" className="text-cyan-300 underline hover:text-cyan-400 transition" target="_blank" rel="noopener noreferrer">Política de Privacidad</a> y los Términos de Servicio.</label>
+              </div>
+
+              {/* Mensagem de erro */}
+              {error && <div className="mt-4 text-sm text-rose-400 font-semibold p-3 rounded-xl bg-rose-900/50 ring-1 ring-rose-400/40">{error}</div>}
+
+              <button type="submit" className="mt-6 w-full rounded-xl bg-cyan-400/20 px-5 py-3 ring-1 ring-cyan-300/30 hover:bg-cyan-400/30">Enviar por WhatsApp</button>
+              <p className="mt-3 text-white/60 text-xs text-center">Será redirigido a WhatsApp para enviar el mensaje.</p>
+            </Motion>
+          </div>
+        </MotionSection>
+      );
+    }
+
+    function Field({ label, placeholder, className, value, onChange, type="text", required=false }){ return (
+      <label className={cx("block", className)}><span className="text-xs text-white/70">{label}</span><input value={value} onChange={e=>onChange?.(e.target.value)} placeholder={placeholder} className="mt-1 w-full rounded-xl bg-white/5 px-4 py-3 ring-1 ring-white/10 focus:outline-none focus:ring-cyan-300/40 text-white placeholder-white/30" type={type} required={required} /></label>
+    ); }
+    function TextArea({ label, placeholder, className, value, onChange, required=false }){ return (
+      <label className={cx("block", className)}><span className="text-xs text-white/70">{label}</span><textarea rows="4" value={value} onChange={e=>onChange?.(e.target.value)} placeholder={placeholder} className="mt-1 w-full rounded-xl bg-white/5 px-4 py-3 ring-1 ring-white/10 focus:outline-none focus:ring-cyan-300/40 text-white placeholder-white/30" required={required} /></label>
+    ); }
+
+    function Footer(){
+      return (
+        <footer className="relative py-12 border-t border-white/10 bg-black/30">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-white/70 text-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Logo no Footer */}
+            <div className="flex items-center gap-2 text-white"><Badge>🎨</Badge><span className="font-semibold tracking-wide">{brand.name}</span></div>
+            <div className="opacity-80">© {new Date().getFullYear()} — Paredes lisas, clientes felices.</div>
+            <div className="flex gap-4 items-center">
+                <a href="#" className="hover:text-white transition">Política de Privacidad</a>
+                <a href="#" className="hover:text-white transition">Aviso Legal</a>
+                {/* NOVO: Link para o Instagram no rodapé */}
+                <a href={brand.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram Oliveira Obras" className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 ring-1 ring-white/10 hover:bg-white/10 transition text-white/80 text-xs">
+                    <span className="instagram-icon rounded-full h-4 w-4 grid place-items-center"><InstagramIcon /></span>
+                    @oliveiraobrasvlc
+                </a>
+            </div>
+          </div>
+        </footer>
+      );
+    }
+
+    function FloatingWhatsApp(){
+      // Adicionando efeito 'pulse' ao botão flutuante (melhoria sugerida)
+      return (
+        <a
+  href={`https://wa.me/${brand.whatsapp.replace(/\D/g,"")}`}
+  target="_blank"
+  rel="noreferrer"
+  className="fixed z-50 bottom-20 right-6 h-14 w-14 rounded-full bg-green-500 grid place-items-center shadow-xl ring-1 ring-white/10 hover:scale-105 transition animate-pulse"
+  aria-label="whatsapp"
+>
+  <img 
+    src="https://i.imgur.com/M3ouSPG.png" 
+    alt="WhatsApp" 
+    className="h-10 w-10 object-contain"
+  />
+</a>
+      );
+    }
+
+    function CTAStickyRibbon(){ return (
+      <div className="fixed z-40 bottom-0 left-0 right-0 backdrop-blur bg-black/40 border-t border-white/10 p-3 flex items-center justify-center gap-4"><a href="#calculadora" className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 hover:bg-white/15 text-sm">Calcula tu precio</a><a href="#contacto" className="rounded-xl bg-cyan-400/20 px-4 py-2 ring-1 ring-cyan-300/30 hover:bg-cyan-400/30 inline-flex items-center gap-2 text-sm">🟢 Pide presupuesto</a></div>
+    ); }
+
+    function CookieBanner(){
+      const [open, setOpen] = useState(true);
+      if(!open) return null;
+      return (
+        <div className="fixed z-50 bottom-0 left-0 right-0 p-4 backdrop-blur bg-black/60 border-t border-white/10 text-white/80">
+          <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-3">
+            <p className="text-sm">Usamos cookies analíticas para mejorar la experiencia. Puedes desactivarlas en cualquier momento.</p>
+            <div className="flex items-center gap-2"><button onClick={()=>setOpen(false)} className="px-3 py-2 rounded-xl bg-white/10 ring-1 ring-white/20 hover:bg-white/15 text-sm">Aceptar</button><a href="#" className="px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/20 hover:bg-white/10 text-sm">Configurar</a></div>
+          </div>
+        </div>
+      );
+    }
+
+    /* TrustBar REMOVIDA
+    function TrustBar(){
+      const items=[{text:"Seguro de obra"},{text:"Garantía por escrito"},{text:"Pinturas eco"},{text:"Plazos cumplidos"},{text:"Acabado premium"}];
+      return (
+        <div className="relative border-b border-white/10 bg-black/20"><div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-center gap-6 text-white/80 text-sm">{items.map(i => (<span key={i.text} className="inline-flex items-center gap-2">✅ {i.text}</span>))}</div></div>
+      );
+    }
+    */
+
+    function App(){
+      useSEO();
+      return (
+        <div className="min-h-screen bg-[#0b1020] text-white">
+          <NavBar />
+          {/* TrustBar REMOVIDA DA RENDERIZAÇÃO */}
+          <Hero />
+          <Services />
+          <Process />
+          <PricingGrid />
+          <PriceCalculator />
+          <Gallery />
+          <Testimonials />
+          <ServiceAreas />
+          <Timeline />
+          <MapSection />
+          <BlogTeaser />
+          <FAQ />
+          <Contact />
+          <Footer />
+          <FloatingWhatsApp />
+          <CTAStickyRibbon />
+          <CookieBanner />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
